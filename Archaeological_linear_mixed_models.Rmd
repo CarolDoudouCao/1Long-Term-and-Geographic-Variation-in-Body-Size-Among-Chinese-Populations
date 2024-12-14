@@ -168,7 +168,6 @@ lme_male_fxl_full1 <- lmer(FXL ~  altitude_range + Min_temp + Max_temp + Min_pre
 lme_female_fxl_full1 <- lmer(FXL ~  altitude_range + Min_temp + Max_temp + Min_precip + Max_precip + time_period + (1 | site_id), data = ancient_chi_female_FXL)
 ```
 
-
 ```{r, include = FALSE}
 # Now includes p-values for fixed effects
 summary(lme_male_fxl_full1)  
@@ -348,17 +347,6 @@ plot_full_fxl_coefficients <- ggplot(tidy_combined_full_fxl, aes(x = estimate, y
   coord_flip()
 ```
 
-
-```{r, include=FALSE}
-# Display the plot
-print(plot_full_fxl_coefficients)
-```
-
-```{r, include = FALSE}
-# Save the plot with custom dimensions
-ggsave("fxl_coefficient_plot.png", plot = plot_full_fxl_coefficients, width = 12, height = 10)
-```
-
 #### TXL
 ```{r}
 # Tidy the model outputs and add model labels
@@ -409,138 +397,6 @@ plot_full_txl_coefficients <- ggplot(tidy_combined_full_txl, aes(y = term, x = e
   ) +
   coord_flip()
 ```
-
-
-```{r, include=FALSE}
-# Display the plot
-print(plot_full_txl_coefficients)
-```
-
-
-```{r, include = FALSE}
-# Save the plot with specified dimensions
-ggsave("txl_coefficient_plot.png", plot = plot_full_txl_coefficients, width = 12, height = 10)
-```
-
-
-```{r, include = FALSE}
-#### HXL
-# Tidy the model outputs and add model labels
-tidy_male_full_hxl <- tidy(lme_male_hxl_full1, effects = "fixed") %>%
-  mutate(model = "Male")
-tidy_female_full_hxl <- tidy(lme_female_hxl_full1, effects = "fixed") %>%
-  mutate(model = "Female")
-
-# Combine male and female outputs
-tidy_combined_full_hxl <- bind_rows(tidy_male_full_hxl, tidy_female_full_hxl) %>%
-  filter(term != "(Intercept)") %>% # Remove intercept
-  mutate(
-    sig = ifelse(p.value < 0.05, "Sig", "Not Sig"),         # Add significance flag
-    ci_low = estimate - 1.96 * std.error,                  # Compute lower CI
-    ci_high = estimate + 1.96 * std.error                  # Compute upper CI
-  )
-
-# Reorder terms for plotting
-tidy_combined_full_hxl$term <- factor(tidy_combined_full_hxl$term, levels = unique(tidy_combined_full_hxl$term))
-
-# Create the plot
-plot_full_hxl_coefficients <- ggplot(tidy_combined_full_hxl, aes(y = term, x = estimate, fill = interaction(model, sig))) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.7), width = 0.6) +
-  geom_errorbar(aes(xmin = ci_low, xmax = ci_high), 
-                position = position_dodge(0.7), width = 0.2) +
-  labs(
-    y = "Predictor Variables", 
-    x = "Coefficient Estimate (with 95% Confidence Interval)", 
-    title = "Fixed Effects Coefficient Estimates for Male and Female Models (HXL)"
-  ) +
-  # Custom fill scale for significance and model interaction
-  scale_fill_manual(values = c(
-    "Male.Sig" = "blue", 
-    "Female.Sig" = "red", 
-    "Male.Not Sig" = "lightblue", 
-    "Female.Not Sig" = "pink"
-  )) +
-  theme_minimal() +
-  theme(
-    axis.text.y = element_text(angle = 0, hjust = 1, size = 16), # Readable y-axis text
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 16), # Readable x-axis text
-    axis.title.y = element_text(size = 16), # Enlarged y-axis title
-    axis.title.x = element_text(size = 16), # Enlarged x-axis title
-    plot.title = element_text(hjust = 0.5, size = 18), # Centered and enlarged title
-    legend.position = "bottom", # Legend at the bottom
-    legend.text = element_text(size = 16), # Enlarged legend text
-    legend.title = element_text(size = 16) # Enlarged legend title
-  ) +
-  coord_flip()
-
-# Display the plot
-print(plot_full_hxl_coefficients)
-```
-
-```{r, include = FALSE}
-# Save the plot with specified dimensions
-ggsave("hxl_coefficient_plot.png", plot = plot_full_hxl_coefficients, width = 12, height = 10)
-```
-
-
-```{r, include = FALSE}
-#### RXL
-# Tidy the model outputs and add model labels
-tidy_male_full_rxl <- tidy(lme_male_rxl_full1, effects = "fixed") %>%
-  mutate(model = "Male")
-tidy_female_full_rxl <- tidy(lme_female_rxl_full1, effects = "fixed") %>%
-  mutate(model = "Female")
-
-# Combine male and female outputs
-tidy_combined_full_rxl <- bind_rows(tidy_male_full_rxl, tidy_female_full_rxl) %>%
-  filter(term != "(Intercept)") %>% # Remove intercept
-  mutate(
-    sig = ifelse(p.value < 0.05, "Sig", "Not Sig"),         # Add significance flag
-    ci_low = estimate - 1.96 * std.error,                  # Compute lower CI
-    ci_high = estimate + 1.96 * std.error                  # Compute upper CI
-  )
-
-# Reorder terms for plotting
-tidy_combined_full_rxl$term <- factor(tidy_combined_full_rxl$term, levels = unique(tidy_combined_full_rxl$term))
-
-# Create the plot
-plot_full_rxl_coefficients <- ggplot(tidy_combined_full_rxl, aes(y = term, x = estimate, fill = interaction(model, sig))) +
-  geom_bar(stat = "identity", position = position_dodge(width = 0.7), width = 0.6) +
-  geom_errorbar(aes(xmin = ci_low, xmax = ci_high), 
-                position = position_dodge(0.7), width = 0.2) +
-  labs(
-    y = "Predictor Variables", 
-    x = "Coefficient Estimate (with 95% Confidence Interval)", 
-    title = "Fixed Effects Coefficient Estimates for Male and Female Models (RXL)"
-  ) +
-  scale_fill_manual(values = c(
-    "Male.Sig" = "blue", 
-    "Female.Sig" = "red", 
-    "Male.Not Sig" = "lightblue", 
-    "Female.Not Sig" = "pink"
-  )) +
-  theme_minimal() +
-  theme(
-    axis.text.y = element_text(angle = 0, hjust = 1, size = 16),
-    axis.text.x = element_text(angle = 45, hjust = 1, size = 16),
-    axis.title.y = element_text(size = 16),
-    axis.title.x = element_text(size = 16),
-    plot.title = element_text(hjust = 0.5, size = 18),
-    legend.position = "bottom",
-    legend.text = element_text(size = 16),
-    legend.title = element_text(size = 16)
-  ) +
-  coord_flip()
-
-# Display the plot
-print(plot_full_rxl_coefficients)
-```
-
-```{r, include = FALSE}
-# Save the plot
-ggsave("rxl_coefficient_plot.png", plot = plot_full_rxl_coefficients, width = 12, height = 10)
-```
-
 #### FHD
 ```{r}
 # Tidy the model outputs and add model labels
@@ -589,15 +445,4 @@ plot_full_fhd_coefficients <- ggplot(tidy_combined_full_fhd, aes(y = term, x = e
     legend.title = element_text(size = 16)
   ) +
   coord_flip()
-```
-
-
-```{r, include=FALSE}
-# Display the plot
-print(plot_full_fhd_coefficients)
-```
-
-```{r, include = FALSE}
-# Save the plot
-ggsave("fhd_coefficient_plot.png", plot = plot_full_fhd_coefficients, width = 12, height = 10)
 ```
