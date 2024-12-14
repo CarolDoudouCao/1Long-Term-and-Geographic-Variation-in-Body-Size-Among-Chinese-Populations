@@ -349,7 +349,7 @@ print(combined_plot)
 
 ```{r, include=FALSE}
 # Save the plot
-ggsave("combined_robust_modern_groups.tiff", plot = combined_plot, width = 6, height = 5, dpi = 600)
+ggsave("output/combined_robust_modern_groups.tiff", plot = combined_plot, width = 6, height = 5, dpi = 600)
 ```
 
 ```{r, include=FALSE}
@@ -443,7 +443,6 @@ diagnose_model <- function(model, robust = FALSE, robust_se = FALSE) {
 # Diagnose with robust standard errors for a standard linear model:
  diagnose_model(male_stature_lm, robust_se = TRUE)
 ```
-
 
 ```{r, include=FALSE}
 # Create a new variable to merge time periods 1 and 2
@@ -800,13 +799,12 @@ print(plot3)
 print(plot4)
 ```
 
-
 ```{r,include=FALSE}
 # Save each plot
-ggsave("early_male_population_leng.png", plot = plot1, width = 10, height = 10)
-ggsave("early_female_population_leng.png", plot = plot2, width = 10, height = 10)
-ggsave("late_male_population_leng.png", plot = plot3, width = 7.5, height = 7.5)
-ggsave("late_female_population_leng.png", plot = plot4, width = 7.5, height = 7.5)
+ggsave("data/early_male_population_leng.png", plot = plot1, width = 10, height = 10)
+ggsave("data/early_female_population_leng.png", plot = plot2, width = 10, height = 10)
+ggsave("data/late_male_population_leng.png", plot = plot3, width = 7.5, height = 7.5)
+ggsave("data/late_female_population_leng.png", plot = plot4, width = 7.5, height = 7.5)
 ```
 
 ## 3.2 Body Mass
@@ -956,7 +954,6 @@ htpred_female_late_df <- as.data.frame(htpred_female_late, xy = TRUE)
 colnames(htpred_female_late_df) <- c("Longitude", "Latitude", "Body_mass_kg")
 ```
 
-
 ```{r}
 # Calculate global min and max for Body_mass_kg across all datasets to unify the scale
 global_min <- min(c(min(htpred_male_early_df $Body_mass_kg, na.rm = TRUE),
@@ -969,6 +966,7 @@ global_max <- max(c(max(htpred_male_early_df$Body_mass_kg, na.rm = TRUE),
                     max(htpred_male_late_df$Body_mass_kg, na.rm = TRUE),
                     max(htpred_female_late_df$Body_mass_kg, na.rm = TRUE)))
 ```
+
 ```{r}
 # Function to plot raster heatmap overlaid on the China base map with dataset points by Ethnic Group using shapes and colors
 plot_heatmap_with_points_on_china_map <- function(raster_df, points_df, title, group_name) {
@@ -1032,7 +1030,6 @@ plot3 <- plot_heatmap_with_points_on_china_map(htpred_male_late_df, ht_china_mal
 plot4 <- plot_heatmap_with_points_on_china_map(htpred_female_late_df, ht_china_female_late, "Heatmap with Points - Late Female Population", "Late Female Population")
 ```
 
-
 ```{r}
 # Display each plot separately
 print(plot1)
@@ -1041,13 +1038,12 @@ print(plot3)
 print(plot4)
 ```
 
-
 ```{r, include=FALSE}
 # Save each plot
-ggsave("early_male_population_bodymass.png", plot = plot1, width = 10, height = 10)
-ggsave("early_female_population_bodymass.png", plot = plot2, width = 10, height = 10)
-ggsave("late_male_population_bodymass.png", plot = plot3, width = 7.5, height = 7.5)
-ggsave("late_female_population_bodymass.png", plot = plot4, width = 7.5, height = 7.5)
+ggsave("data/early_male_population_bodymass.png", plot = plot1, width = 10, height = 10)
+ggsave("data/early_female_population_bodymass.png", plot = plot2, width = 10, height = 10)
+ggsave("data/late_male_population_bodymass.png", plot = plot3, width = 7.5, height = 7.5)
+ggsave("data/late_female_population_bodymass.png", plot = plot4, width = 7.5, height = 7.5)
 ```
 
 ## 3.3 Sitting height
@@ -1284,8 +1280,8 @@ print(plot4)
 
 ```{r, include=FALSE}
 # Save each plot
-ggsave("early_male_population_R_Sitting_ht.png", plot = plot1, width = 10, height = 10)
-ggsave("early_female_population_R_Sitting_ht.png", plot = plot2, width = 10, height = 10)
-ggsave("late_male_population_R_Sitting_ht.png", plot = plot3, width = 7.5, height = 7.5)
-ggsave("late_female_population_R_Sitting_ht.png", plot = plot4, width = 7.5, height = 7.5)
+ggsave("data/early_male_population_R_Sitting_ht.png", plot = plot1, width = 10, height = 10)
+ggsave("data/early_female_population_R_Sitting_ht.png", plot = plot2, width = 10, height = 10)
+ggsave("data/late_male_population_R_Sitting_ht.png", plot = plot3, width = 7.5, height = 7.5)
+ggsave("data/late_female_population_R_Sitting_ht.png", plot = plot4, width = 7.5, height = 7.5)
 ```
