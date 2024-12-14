@@ -47,25 +47,6 @@ Read the group data on contemporary populations
 groups <- read_csv("data/modern_multiple_groups.csv")
 ```
 
-```{r, include=FALSE}
-# Replace '-' with NA in the relevant columns
-groups$Sitting_height[groups$Sitting_height == '-'] <- NA
-groups$Stature_cm[groups$`Stature(cm)` == '-'] <- NA
-groups$`Body_mass(kg)`[groups$`Body_mass(kg)` == '-'] <- NA 
-groups$Living_Bi_iliaca_breadth [groups$`Living_Bi_iliaca_breadth` == '-'] <- NA
-```
-
-```{r, include=FALSE}
-groups$Stature_cm <- as.numeric(groups$`Stature(cm)`)
-groups$Body_mass_kg <- as.numeric(groups$`Body_mass(kg)`)
-groups$Sitting_height <- as.numeric(groups$Sitting_height)
-groups$Living_Bi_iliaca_breadth <- as.numeric(groups$Living_Bi_iliaca_breadth)
-groups$Ethnic_Group <- as.factor(groups$Ethnic_Group)
-groups$Sex <- as.factor(groups$Sex)
-# Remove rows with NA coordinates before converting to sf object
-groups <- groups %>% filter(!is.na(`Longitude (E)`) & !is.na(`Latitude (N)`))
-```
-
 ## Assign the climatic data
 ### Read the climatic data
 ```{r}
@@ -110,21 +91,6 @@ china_shape <- st_read(shapefile_path)
 ```
 
 # 2. Regression analysis
-```{r, include=FALSE}
-Merged <- groups %>%
-  mutate(Ethnic_Group = if_else(Ethnic_Group %in% c("Han", "Tibetan", "Sherpa", "Luoba","Menba" ), Ethnic_Group, "Other Minorities")) %>%
-  dplyr::select(Ethnic_Group, Sex, Stature_cm = `Stature(cm)`, Body_mass_kg = `Body_mass(kg)`, BMI=`BMI`, Sitting_height, Relative_sitting_height = `R_Sitting_ht`, Living_Bi_iliaca_breadth, Relative_living_bi_iliaca_breadth=`Relative_Living_Bi_iliaca_breadth`, Longitude_E = `Longitude (E)`, 
-         Latitude_N = `Latitude (N)`, Time_period)
-```
-
-```{r, include=FALSE}
-Merged$Longitude_E <- as.numeric(Merged$Longitude_E)
-Merged$Latitude_N <- as.numeric(Merged$Latitude_N)
-Merged$Time_period <- as.factor(Merged$Time_period)
-Merged$Stature_cm <- as.numeric(Merged$Stature_cm)
-Merged$Body_mass_kg <- as.numeric(Merged$Body_mass_kg)
-```
-
 ## Separate data by sex
 ```{r}
 # Use dplyr::filter() to avoid conflicts
@@ -164,17 +130,6 @@ female_stature_lm <- lm(Stature ~ Min_temp + Max_temp + Min_precip + Max_precip 
 female_sitting_lm <- lm(Sitting_height ~ Min_temp + Max_temp + Min_precip + Max_precip + Altitude_range+ Time, data = female_data)
 female_bodymass_lm <- lm(Body_mass ~ Min_temp + Max_temp + Min_precip + Max_precip + Altitude_range+ Time, data = female_data)
 ```
-
-```{r, include=FALSE}
-# View summaries
-summary(male_stature_lm)
-summary(male_sitting_lm)
-summary(male_bodymass_lm)
-summary(female_stature_lm)
-summary(female_sitting_lm)
-summary(female_bodymass_lm)
-```
-
 ```{r}
 # Function to check model assumptions
 check_assumptions <- function(model) {
@@ -230,100 +185,6 @@ female_sitting_rlm <- rlm(Sitting_height ~ Min_temp + Max_temp + Min_precip + Ma
 female_bodymass_rlm <- rlm(Body_mass ~ Min_temp + Max_temp + Min_precip + Max_precip + Altitude_range+Time, data = female_data)
 ```
 
-
-```{r, include=FALSE}
-# Summarize the robust linear models
-summary(male_stature_rlm)
-summary(male_sitting_rlm)
-summary(male_bodymass_rlm)
-
-summary(female_stature_rlm)
-summary(female_sitting_rlm)
-summary(female_bodymass_rlm)
-```
-
-```{r, include=FALSE}
-# Robust standard errors for male models
-coeftest(male_stature_lm, vcov = vcovHC(male_stature_lm, type = "HC1"))
-coeftest(male_sitting_lm, vcov = vcovHC(male_sitting_lm, type = "HC1"))
-coeftest(male_bodymass_lm, vcov = vcovHC(male_bodymass_lm, type = "HC1"))
-
-# Robust standard errors for female models
-coeftest(female_stature_lm, vcov = vcovHC(female_stature_lm, type = "HC1"))
-coeftest(female_sitting_lm, vcov = vcovHC(female_sitting_lm, type = "HC1"))
-coeftest(female_bodymass_lm, vcov = vcovHC(female_bodymass_lm, type = "HC1"))
-```
-
-```{r, include=FALSE}
-# Use coeftest() to get robust standard errors for male models
-robust_male_stature <- coeftest(male_stature_rlm, vcov = vcovHC(male_stature_rlm, type = "HC1"))
-robust_male_sitting <- coeftest(male_sitting_rlm, vcov = vcovHC(male_sitting_rlm, type = "HC1"))
-robust_male_bodymass <- coeftest(male_bodymass_rlm, vcov = vcovHC(male_bodymass_rlm, type = "HC1"))
-
-# Use coeftest() to get robust standard errors for female models
-robust_female_stature <- coeftest(female_stature_rlm, vcov = vcovHC(female_stature_rlm, type = "HC1"))
-robust_female_sitting <- coeftest(female_sitting_rlm, vcov = vcovHC(female_sitting_rlm, type = "HC1"))
-robust_female_bodymass <- coeftest(female_bodymass_rlm, vcov = vcovHC(female_bodymass_rlm, type = "HC1"))
-
-# Helper function to extract coefficients, std errors, and p-values for plotting
-extract_model_data <- function(coeftest_output) {
-  data.frame(
-    Variable = rownames(coeftest_output)[-1],  # Skip intercept
-    Coefficient = coeftest_output[-1, "Estimate"],
-    Std_Error = coeftest_output[-1, "Std. Error"],
-    p_value = coeftest_output[-1, "Pr(>|z|)"],
-    Significance = ifelse(coeftest_output[-1, "Pr(>|z|)"] < 0.05, "Significant", "Non-Significant")
-  )
-}
-
-# Extract data for male models
-male_stature_data <- extract_model_data(robust_male_stature)
-male_sitting_data <- extract_model_data(robust_male_sitting)
-male_bodymass_data <- extract_model_data(robust_male_bodymass)
-
-# Combine male data for plotting
-male_combined_data <- rbind(
-  data.frame(male_stature_data, Model = "Stature"),
-  data.frame(male_bodymass_data, Model = "Body Mass")
-)
-
-# Extract data for female models
-female_stature_data <- extract_model_data(robust_female_stature)
-female_sitting_data <- extract_model_data(robust_female_sitting)
-female_bodymass_data <- extract_model_data(robust_female_bodymass)
-
-# Combine female data for plotting
-female_combined_data <- rbind(
-  data.frame(female_stature_data, Model = "Stature"),
-  data.frame(female_bodymass_data, Model = "Body Mass")
-)
-
-# Plot coefficients for male models with coefficients on x-axis (horizontal bars)
-plot_male <- ggplot(male_combined_data, aes(x = Coefficient, y = Variable, fill = Significance)) +
-  geom_bar(stat = "identity", position = "dodge", color = "black") +
-  geom_errorbar(aes(xmin = Coefficient - 1.96 * Std_Error, xmax = Coefficient + 1.96 * Std_Error), width = 0.2, position = position_dodge(0.9)) +
-  geom_text(aes(label = round(Coefficient, 2)), hjust = -0.5, size = 3.5) +
-  scale_fill_manual(values = c("Significant" = "skyblue", "Non-Significant" = "grey")) +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
-  theme(axis.text.y = element_text(angle = 0, hjust = 1)) +
-  labs(fill = "Significance", title = "Male Model Coefficients (Robust Regression)", x = "Coefficient", y = "Variable") +
-  facet_wrap(~ Model)
-
-# Plot coefficients for female models with coefficients on x-axis (horizontal bars)
-plot_female <- ggplot(female_combined_data, aes(x = Coefficient, y = Variable, fill = Significance)) +
-  geom_bar(stat = "identity", position = "dodge", color = "black") +
-  geom_errorbar(aes(xmin = Coefficient - 1.96 * Std_Error, xmax = Coefficient + 1.96 * Std_Error), width = 0.2, position = position_dodge(0.9)) +
-  geom_text(aes(label = round(Coefficient, 2)), hjust = -0.5, size = 3.5) +
-  scale_fill_manual(values = c("Significant" = "pink", "Non-Significant" = "grey")) +
-  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +
-  theme(axis.text.y = element_text(angle = 0, hjust = 1)) +
-  labs(fill = "Significance", title = "Female Model Coefficients (Robust Regression)", x = "Coefficient", y = "Variable") +
-  facet_wrap(~ Model)
-
-# Display the plots
-print(plot_male)
-print(plot_female)
-```
 ### Plot coefficients
 ```{r}
 # Combine male and female data for plotting
@@ -348,85 +209,6 @@ combined_plot <- ggplot(combined_data, aes(y = Coefficient, x = Variable)) +
 # Display the combined plot
 print(combined_plot)
 ```
-
-
-```{r, include=FALSE}
-# Save the plot
-ggsave("output/combined_robust_modern_groups.tiff", plot = combined_plot, width = 6, height = 5, dpi = 600)
-```
-
-```{r, include=FALSE}
-# Function to calculate robust standard errors and extract data
-get_robust_model_data <- function(model, model_name) {
-  robust_result <- coeftest(model, vcov = vcovHC(model, type = "HC1"))
-  data <- data.frame(
-    Variable = rownames(robust_result)[-1],  # Skip intercept
-    Coefficient = robust_result[-1, "Estimate"],
-    Std_Error = robust_result[-1, "Std. Error"],
-    p_value = robust_result[-1, "Pr(>|z|)"],
-    Significance = ifelse(robust_result[-1, "Pr(>|z|)"] < 0.05, "Significant", "Non-Significant"),
-    Model = model_name
-  )
-  return(data)
-}
-
-# Extract data for male and female models
-male_stature_data <- get_robust_model_data(male_stature_rlm, "Stature")
-male_sitting_data <- get_robust_model_data(male_sitting_rlm, "Relative Sitting Height")
-male_bodymass_data <- get_robust_model_data(male_bodymass_rlm, "Body Mass")
-
-female_stature_data <- get_robust_model_data(female_stature_rlm, "Stature")
-female_sitting_data <- get_robust_model_data(female_sitting_rlm, "Relative Sitting Height")
-female_bodymass_data <- get_robust_model_data(female_bodymass_rlm, "Body Mass")
-
-# Combine data for plotting
-male_combined_data <- rbind(male_stature_data, male_sitting_data, male_bodymass_data)
-female_combined_data <- rbind(female_stature_data, female_sitting_data, female_bodymass_data)
-combined_data <- rbind(
-  data.frame(male_combined_data, Sex = "Male"),
-  data.frame(female_combined_data, Sex = "Female")
-)
-
-# Add a column for asterisks to indicate significant predictors
-combined_data$Significant_Asterisk <- ifelse(combined_data$Significance == "Significant", "*", "")
-
-# Plot combined data for both sexes
-combined_plot <- ggplot(combined_data, aes(y = Coefficient, x = Variable, fill = Significance)) +
-  geom_bar(stat = "identity", position = "dodge", color = "black") +
-  geom_errorbar(aes(ymin = Coefficient - 1.96*Std_Error, ymax = Coefficient + 1.96* Std_Error), width = 0.2, position = position_dodge(0.9)) +
-  geom_text(aes(label = Significant_Asterisk), color = "red", size = 5, vjust = -0.5, position = position_dodge(width = 0.9)) +
-  facet_grid(Model ~ Sex) +
-  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
-  theme(axis.text.x = element_text(angle = 75, hjust = 1), legend.position = "bottom") +
-  scale_fill_manual(values = c("Significant" = "skyblue", "Non-Significant" = "grey")) +
-  labs(title = "Male and Female Model Coefficients (Robust Regression)", y = "Coefficient", x = "Variable", fill = "Significance")
-
-# Display the plot
-print(combined_plot)
-```
-
-```{r, include=FALSE}
-# Function for diagnosing linear and robust models
-diagnose_model <- function(model, robust = FALSE, robust_se = FALSE) {
-  # 1. Plot diagnostics for residuals, normality, etc.
-  par(mfrow = c(2, 2))  # Set up plot area
-  plot(model)  # This will generate: Residuals vs Fitted, Q-Q plot, etc.
-  
-  # 2. Check for multicollinearity using VIF (only if model is a linear model, not rlm)
-  if (!inherits(model, "rlm")) {
-    cat("Checking for multicollinearity using VIF...\n")
-    vif_values <- vif(model)
-    print(vif_values)
-    cat("VIF values above 5 indicate potential multicollinearity.\n\n")
-  }
-  
-  # 3. Print robust standard errors if requested (for linear models only)
-  if (robust_se & !inherits(model, "rlm")) {
-    cat("Calculating robust standard errors...\n")
-    robust_model <- coeftest(model, vcov = vcovHC(model, type = "HC1"))
-    print(robust_model)
-    cat("\n")
-  }
   
   # 4. Print summary for robust linear models (rlm)
   if (inherits(model, "rlm")) {
@@ -447,50 +229,7 @@ diagnose_model <- function(model, robust = FALSE, robust_se = FALSE) {
  diagnose_model(male_stature_lm, robust_se = TRUE)
 ```
 
-```{r, include=FALSE}
-# Create a new variable to merge time periods 1 and 2
-Merged$Time_period_merged <- ifelse(Merged$Time_period %in% c("1", "2"), "1-2", as.character(Merged$Time_period))
-
-# Plot with merged time periods
-ggplot(Merged, aes(x = Stature_cm, y = Sitting_height, color = Sex, shape = Ethnic_Group)) +
-  geom_point() +
-  labs(x = "Stature (cm)", y = "Sitting Height", title = "Stature vs Sitting Height by Ethnic Group and Time Period") +
-  theme(legend.position = "bottom") +
-  facet_grid(Sex ~ Time_period_merged)
-
-# Plot with merged time periods
-ggplot(Merged, aes(x = Stature_cm, y = Merged$Body_mass_kg, color = Sex, shape = Ethnic_Group)) +
-  geom_point() +
-  labs(x = "Stature (cm)", y = "Body Mass", title = "Stature vs Body Mass by Ethnic Group and Time Period") +
-  theme(legend.position = "bottom") +
-  facet_grid(Sex ~ Time_period_merged)
-```
-
 ## 2.3 Compare the Han, Sherpa and Tibetan Groups
-```{r, include=FALSE}
-filtered_data <- groups %>%
-  dplyr::filter(Ethnic_Group %in% c("Han", "Tibetan", "Sherpa","Menba", "Luoba")) %>%
-  dplyr::select(Ethnic_Group, Sex, Stature_cm = `Stature(cm)`, Body_mass_kg = `Body_mass(kg)`, 
-         Sitting_height, Living_Bi_iliaca_breadth, Longitude_E = `Longitude (E)`, 
-         Latitude_N = `Latitude (N)`, Time_period)
-
-# Converting character columns to numeric where appropriate
-filtered_data$Stature_cm <- as.numeric(filtered_data$Stature_cm)
-filtered_data$Body_mass_kg <- as.numeric(filtered_data$Body_mass_kg)
-# Calculate BMI
-filtered_data$BMI <- filtered_data$Body_mass_kg / ((filtered_data$Stature_cm / 100) ^ 2)
-# Calculate Relative Sitting Height
-filtered_data$Relative_Sitting_Height <- (filtered_data$Sitting_height / filtered_data$Stature_cm) * 100
-```
-
-```{r, include=FALSE}
-# Create a new variable to merge time periods 1 and 2
-filtered_data$Time_period_merged <- ifelse(filtered_data$Time_period %in% c("1", "2"), "1-2", as.character(filtered_data$Time_period))
-# Create a new variable to merge time periods 1 and 2 as "Early modern" and 3 as "Late modern"
-filtered_data$Time_period_merged <- ifelse(filtered_data$Time_period %in% c("1", "2"), "Early modern",
-                                           ifelse(filtered_data$Time_period == "3", "Late modern", as.character(filtered_data$Time_period)))
-```
-
 ```{r}
 # Set the desired order for the Ethnic_Group factor
 filtered_data$Ethnic_Group <- factor(filtered_data$Ethnic_Group, levels = c("Han", "Tibetan", "Sherpa"))
@@ -514,21 +253,6 @@ groups <- groups %>%
   ))
 ```
 
-```{r, include=FALSE}
-# Filter to keep only Han (Northern), Han (Southern), Sherpa, and Tibetan groups
-groups_filtered <- groups %>%
-  filter(ethnic_group_2 %in% c("Han (Northern)", "Han (Southern)", "Tibetan", "Sherpa"))
-
-# Update factor levels for 'ethnic_group_2' to reflect only the four desired groups
-groups_filtered$ethnic_group_2 <- factor(groups_filtered$ethnic_group_2, levels = c(
-  "Han (Northern)", "Han (Southern)", "Tibetan", "Sherpa"
-))
-
-# Create a new variable to merge time periods 1 and 2 as "Early modern" and 3 as "Late modern"
-groups_filtered$Time_period_merged <- ifelse(groups_filtered$Time_period %in% c("1", "2"), "Early modern (~1999)",
-                                             ifelse(groups_filtered$Time_period == "3", "Late modern (2000~)", as.character(groups_filtered$Time_period)))
-```
-
 ```{r, warning = FALSE}
 # Plot with merged time periods for Body Mass with linear regression line using 'ethnic_group_2'
 body_mass_plot <- ggplot(groups_filtered, aes(x = Stature_cm, y = Body_mass_kg, color = Sex, shape = ethnic_group_2, linetype = ethnic_group_2)) +
@@ -541,11 +265,6 @@ body_mass_plot <- ggplot(groups_filtered, aes(x = Stature_cm, y = Body_mass_kg, 
   scale_linetype_manual(values = c("solid", "dashed","twodash", "blank")) +  # Set different line types for ethnic groups
   guides(shape = guide_legend(nrow = 2), linetype = guide_legend(nrow = 2), color = guide_legend(nrow = 2))
 body_mass_plot
-```
-
-```{r, include=FALSE}
-# Save Body Mass plot
-ggsave("output/Stature_vs_Body_Mass_by_Ethnic_Group.png", body_mass_plot, width = 8, height = 6, dpi = 600)
 ```
 
 # 3 Interpolation over time and space
@@ -720,15 +439,6 @@ plot3 <- plot_heatmap_with_points_on_china_map(htpred_male_late_df, ht_china_mal
 plot4 <- plot_heatmap_with_points_on_china_map(htpred_female_late_df, ht_china_female_late, "Heatmap with Points - Late Female Population")
 ```
 
-
-```{r, include=FALSE}
-# Display each plot separately
-print(plot1)
-print(plot2)
-print(plot3)
-print(plot4)
-```
-
 ```{r}
 # Set global min and max stature values across datasets for consistent heatmap scale
 global_min <- min(htpred_female_early_df$Stature, na.rm = TRUE)
@@ -795,24 +505,6 @@ plot3 <- plot_heatmap_with_points_on_china_map(htpred_male_late_df, ht_china_mal
 # Plot heatmap for Late Female Population with points
 plot4 <- plot_heatmap_with_points_on_china_map(htpred_female_late_df, ht_china_female_late, "Heatmap with Points - Late Female Population", "Late Female Population")
 ```
-
-
-```{r, include=FALSE}
-# Display each plot separately
-print(plot1)
-print(plot2)
-print(plot3)
-print(plot4)
-```
-
-```{r,include=FALSE}
-# Save each plot
-ggsave("data/early_male_population_leng.png", plot = plot1, width = 10, height = 10)
-ggsave("data/early_female_population_leng.png", plot = plot2, width = 10, height = 10)
-ggsave("data/late_male_population_leng.png", plot = plot3, width = 7.5, height = 7.5)
-ggsave("data/late_female_population_leng.png", plot = plot4, width = 7.5, height = 7.5)
-```
-
 ## 3.2 Body Mass
 ```{r}
 # Convert columns to numeric, replacing non-numeric values with NA
@@ -1034,22 +726,6 @@ plot3 <- plot_heatmap_with_points_on_china_map(htpred_male_late_df, ht_china_mal
 
 # Plot heatmap for Late Female Population with points
 plot4 <- plot_heatmap_with_points_on_china_map(htpred_female_late_df, ht_china_female_late, "Heatmap with Points - Late Female Population", "Late Female Population")
-```
-
-```{r, include=FALSE}
-# Display each plot separately
-print(plot1)
-print(plot2)
-print(plot3)
-print(plot4)
-```
-
-```{r, include=FALSE}
-# Save each plot
-ggsave("data/early_male_population_bodymass.png", plot = plot1, width = 10, height = 10)
-ggsave("data/early_female_population_bodymass.png", plot = plot2, width = 10, height = 10)
-ggsave("data/late_male_population_bodymass.png", plot = plot3, width = 7.5, height = 7.5)
-ggsave("data/late_female_population_bodymass.png", plot = plot4, width = 7.5, height = 7.5)
 ```
 
 ## 3.3 Sitting height
@@ -1274,20 +950,4 @@ plot3 <- plot_heatmap_with_points_on_china_map(htpred_male_late_df, ht_china_mal
 
 # Plot heatmap for Late Female Population with points
 plot4 <- plot_heatmap_with_points_on_china_map(htpred_female_late_df, ht_china_female_late, "Heatmap with Points - Late Female Population", "Late Female Population")
-```
-
-```{r, include=FALSE}
-# Display each plot separately
-print(plot1)
-print(plot2)
-print(plot3)
-print(plot4)
-```
-
-```{r, include=FALSE}
-# Save each plot
-ggsave("data/early_male_population_R_Sitting_ht.png", plot = plot1, width = 10, height = 10)
-ggsave("data/early_female_population_R_Sitting_ht.png", plot = plot2, width = 10, height = 10)
-ggsave("data/late_male_population_R_Sitting_ht.png", plot = plot3, width = 7.5, height = 7.5)
-ggsave("data/late_female_population_R_Sitting_ht.png", plot = plot4, width = 7.5, height = 7.5)
 ```
