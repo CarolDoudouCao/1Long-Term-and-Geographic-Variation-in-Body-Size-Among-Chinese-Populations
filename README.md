@@ -38,7 +38,12 @@ To track temporal trends, the data were categorized into the following time peri
 7. Late Iron Age (582–38 BP)  
 
 Groups were also categorized by subsistence strategies across historical periods, such as millet or rice agriculture and highland pastoralism, reflecting cultural and ecological adaptations.  
-
+### Software
+- Analyses were conducted in R using the following packages:
+  raster for bioclimatic variable extraction.
+  lm for linear regression.
+  MASS for robust regression.
+  lmerTest for mixed-effects models.
 ---
 
 ## 2. Regression Analyses
