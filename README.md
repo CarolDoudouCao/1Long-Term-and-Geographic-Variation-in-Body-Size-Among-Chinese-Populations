@@ -4,7 +4,7 @@ This repository is organized into the following components:
 
 ## 1. Information on the Data
 
-This study examines body size and proportions across Chinese populations by integrating data from both contemporary and archaeological sources.  
+Provides information on published and original datasets utilized in the author's (Doudou Cao, DC) PhD research. The data focuses on body size dimensions across both archaeological and contemporary Chinese populations, including:
 
 ### Contemporary Populations
 - **Scope**: Published anthropometric data on modern Chinese populations (mid-20th to early 21st century).  
@@ -50,7 +50,7 @@ To examine relationships between body dimensions, environmental factors, and tim
   - Robust regression for contemporary groups due to outliers.  
   - Linear and mixed-effects models for archaeological groups, incorporating site-specific random effects.  
 - **Visualizations**: Regression coefficients were plotted to represent the direction and magnitude of relationships.  
-
+                      Inverse Distance Weighting (IDW) was also used to represent spatial variability in body size for living and archaeological groups. This method emphasizes local environmental and cultural factors
 ---
 
 ## 3. Bayesian Modeling
@@ -63,18 +63,10 @@ To address the uneven distribution of samples in archaeological datasets, a Baye
 
 ### Computation
 - Conducted using Markov Chain Monte Carlo (MCMC) methods with the Metropolis-Hastings algorithm.  
-- Implemented in R using the `brms` package for Bayesian modeling and `rstan` for computation.  
-
----
-
-## 4. Visualization
-
-### Inverse Distance Weighting (IDW)
-Used to represent spatial variability in body size for living and archaeological groups. This method emphasizes local environmental and cultural factors.  
-
+- Implemented in R using the `brms` package for Bayesian modeling and `rstan` for computation.
+- 
 ### Thin Plate Splines (TPS)
-Applied to smooth Bayesian-modeled femur length data, addressing computational strain and uneven sampling by segmenting data into time periods and reducing the dataset for clarity.  
-
+- Applied to smooth Bayesian-modeled femur length data, addressing computational strain and uneven sampling by segmenting data into time periods and reducing the dataset for clarity.
 ---
 
-This repository provides a comprehensive framework for understanding how environmental, historical, and cultural factors influence body size variation in Chinese populations over time. Scripts and datasets are included for replication and further exploration.
+This study seeks to provide a comprehensive framework for understanding how environmental, historical, and cultural factors influence body size variation in Chinese populations over time. Scripts and datasets are included for replication and further exploration.
