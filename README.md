@@ -78,8 +78,8 @@ To address the uneven distribution of samples in archaeological datasets, a Baye
 - Conducted using Markov Chain Monte Carlo (MCMC) methods with the Metropolis-Hastings algorithm.  
 - Implemented in R using the `brms` package for Bayesian modeling and `rstan` for computation.
   
-### Thin Plate Splines (TPS)
-- Applied to smooth Bayesian-modeled femur length data, addressing computational strain and uneven sampling by segmenting data into time periods and reducing the dataset for clarity.
+### Visualizations
+- **Thin Plate Splines (TPS)** was applied to smooth Bayesian-modeled femur length data, addressing computational strain and uneven sampling by segmenting data into time periods and reducing the dataset for clarity.
 ---
 
 This study seeks to provide a comprehensive framework for understanding how environmental, historical, and cultural factors influence body size variation in Chinese populations over time. Scripts and datasets are included for replication and further exploration.
