@@ -37,7 +37,15 @@ To track temporal trends, the data were categorized into the following time peri
 6. Middle Iron Age (1,530–583 BP)  
 7. Late Iron Age (582–38 BP)  
 
-Groups were also categorized by subsistence strategies across historical periods, such as millet or rice agriculture and highland pastoralism, reflecting cultural and ecological adaptations.  
+Groups were also categorized by subsistence strategies across historical periods:
+1. Broad-spectrum subsistence during the Neolithic.
+2. Early northern millet agriculture during the Neolithic.
+3. Early southern rice agriculture during the Neolithic.
+4. Northern agriculture during the Bronze and Early Iron Age.
+5. Northern agriculture spanning the Early to Middle Iron Age.
+6. Northern agriculture during the Late Iron Age.
+7. Highland pastoralism or husbandry during the Bronze and Iron Age.
+
 ### Software
 - Analyses were conducted in R using the following packages:
   `raster` for bioclimatic variable extraction.
